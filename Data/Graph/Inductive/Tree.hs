@@ -47,6 +47,9 @@ instance (Eq a, Ord b) => Eq (Gr a b) where
     where
       sortAdj (p,n,s) = (sort p,n,sort s)
 
+instance (Ord a, Ord b) => Ord (Gr a b) where
+  (Gr g1) <= (Gr g2) = g1 <= g2
+
 instance (Show a, Show b) => Show (Gr a b) where
   showsPrec d g = showParen (d > 10) $
                     showString "mkGraph "
