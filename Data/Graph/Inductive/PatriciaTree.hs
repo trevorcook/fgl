@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns, CPP, ScopedTypeVariables #-}
 #if __GLASGOW_HASKELL__ >= 702
 {-# LANGUAGE DeriveGeneric #-}
@@ -22,6 +23,7 @@
 module Data.Graph.Inductive.PatriciaTree
     ( Gr
     , UGr
+    , OrdGr(..)
     )
     where
 
@@ -34,6 +36,8 @@ import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
 import           Data.List           (sort)
 import           Data.Maybe          (fromMaybe)
+import           Data.Function       (on)
+import           Data.Monoid         (mappend)
 #if __GLASGOW_HASKELL__ >= 702
 import           GHC.Generics        (Generic)
 #endif
@@ -60,9 +64,6 @@ instance (Eq a, Ord b) => Eq (Gr a b) where
   (Gr g1) == (Gr g2) = fmap sortAdj g1 == fmap sortAdj g2
     where
       sortAdj (p,n,s) = (fmap sort p,n,fmap sort s)
-
-instance (Ord a, Ord b) => Ord (Gr a b) where
-  (Gr g1) <= (Gr g2) = g1 <= g2
 
 instance (Show a, Show b) => Show (Gr a b) where
   showsPrec d g = showParen (d > 10) $
@@ -242,3 +243,15 @@ clearPred g v (s:rest) = clearPred g' v rest
   where
     g' = IM.adjust f s g
     f (ps, l, ss) = (IM.delete v ps, l, ss)
+
+
+----------------------------------------------------------------------
+-- Ordered Graph
+----------------------------------------------------------------------
+newtype OrdGr gr a b = OrdGr { unOrdGr :: gr a b } deriving (Eq)
+
+instance (Graph gr,Eq a, Ord a, Ord b, Eq (gr a b)) => Ord (OrdGr gr a b) where
+  compare (OrdGr gr1) (OrdGr gr2) =
+    ((compare `on` sort . labNodes) gr1 gr2)
+    `mappend` ((compare `on` sort . labEdges) gr1 gr2)
+
