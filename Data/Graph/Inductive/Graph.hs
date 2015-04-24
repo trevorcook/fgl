@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 -- (c) 1999-2005 by Martin Erwig [see file COPYRIGHT]
 -- | Static and Dynamic Inductive Graphs
 module Data.Graph.Inductive.Graph (
@@ -51,13 +52,15 @@ module Data.Graph.Inductive.Graph (
     out',inn',outdeg',indeg',deg',
     -- * Pretty-printing
     prettify,
-    prettyPrint
+    prettyPrint,
+    OrdGr(..)
 ) where
 
 import Control.Arrow (first)
 import Data.Function (on)
-import Data.List     (delete, foldl', groupBy, sortBy, (\\))
+import Data.List     (delete, foldl', groupBy, sortBy, (\\), sort)
 import Data.Maybe    (fromMaybe, isJust)
+import Data.Monoid   (mappend)
 
 -- | Unlabeled node
 type  Node   = Int
@@ -481,3 +484,15 @@ prettify g = ufold showsContext id g ""
 -- | Pretty-print the graph to stdout.
 prettyPrint :: (DynGraph gr, Show a, Show b) => gr a b -> IO ()
 prettyPrint = putStr . prettify
+
+
+----------------------------------------------------------------------
+-- Ordered Graph
+----------------------------------------------------------------------
+newtype OrdGr gr a b = OrdGr { unOrdGr :: gr a b } deriving Eq
+
+instance (Graph gr, Ord a, Ord b, Eq (gr a b) )=> Ord (OrdGr gr a b) where
+  compare (OrdGr gr1) (OrdGr gr2) =
+    ((compare `on` sort . labNodes) gr1 gr2)
+    `mappend` ((compare `on` sort . labEdges) gr1 gr2)
+
