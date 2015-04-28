@@ -1,7 +1,21 @@
 {-# LANGUAGE FlexibleContexts #-}
 -- (c) 1999-2005 by Martin Erwig [see file COPYRIGHT]
--- | Static and Dynamic Inductive Graphs
-module Data.Graph.Inductive.Graph (
+-- | Static and Dynamic Inductive Graphs-----------------------------------------------------------------------------
+--
+-- Module      :  Data.Graph.Inductive.Generic.Graph
+-- Copyright   :
+-- License     :  BSD3
+--
+-- Maintainer  :  Ivan.Miljenovic@gmail.com
+-- Stability   :
+-- Portability :
+--
+-- | Copied From fgl-5.5.1.0:Data.Graph.Inductive.Graph
+-- edited by Trevor Cook to make general indexes.
+--
+-----------------------------------------------------------------------------
+
+module Data.Graph.Inductive.Generic.Graph (
     -- * General Type Defintions
     -- ** Node and Edge Types
     Node,LNode,UNode,
@@ -489,10 +503,12 @@ prettyPrint = putStr . prettify
 ----------------------------------------------------------------------
 -- Ordered Graph
 ----------------------------------------------------------------------
-newtype OrdGr gr a b = OrdGr { unOrdGr :: gr a b } deriving (Read,Show)
+newtype OrdGr gr a b = OrdGr { unOrdGr :: gr a b } deriving (Eq,Read,Show)
 
 instance (Graph gr, Ord a, Ord b )=> Ord (OrdGr gr a b) where
   compare (OrdGr gr1) (OrdGr gr2) =
     ((compare `on` sort . labNodes) gr1 gr2)
     `mappend` ((compare `on` sort . labEdges) gr1 gr2)
+
+
 
