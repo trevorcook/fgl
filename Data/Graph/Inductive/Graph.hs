@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
 -- (c) 1999-2005 by Martin Erwig [see file COPYRIGHT]
 -- | Static and Dynamic Inductive Graphs
 module Data.Graph.Inductive.Graph (
@@ -53,6 +52,7 @@ module Data.Graph.Inductive.Graph (
     -- * Pretty-printing
     prettify,
     prettyPrint,
+    -- * Ordering of Graphs
     OrdGr(..)
 ) where
 
@@ -489,10 +489,16 @@ prettyPrint = putStr . prettify
 ----------------------------------------------------------------------
 -- Ordered Graph
 ----------------------------------------------------------------------
-newtype OrdGr gr a b = OrdGr { unOrdGr :: gr a b } deriving Eq
 
-instance (Graph gr, Ord a, Ord b, Eq (gr a b) )=> Ord (OrdGr gr a b) where
-  compare (OrdGr gr1) (OrdGr gr2) =
-    ((compare `on` sort . labNodes) gr1 gr2)
-    `mappend` ((compare `on` sort . labEdges) gr1 gr2)
+-- | OrdGr comes equipped with an ordering ordering instance, so that
+-- graphs can be used as e.g. map keys.
+newtype OrdGr gr a b = OrdGr { unOrdGr :: gr a b } deriving (Read,Show)
+
+instance (Graph gr, Ord a, Ord b) => Eq (OrdGr gr a b) where
+  g1 == g2 = compare g1 g2 == EQ
+
+instance (Graph gr, Ord a, Ord b )=> Ord (OrdGr gr a b) where
+  compare (OrdGr g1) (OrdGr g2) =
+    (compare `on` sort . labNodes) g1 g2
+    `mappend` (compare `on` sort . labEdges) g1 g2
 
