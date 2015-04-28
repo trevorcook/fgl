@@ -13,15 +13,15 @@ category: Data Structures, Graphs
 author: Martin Erwig, Ivan Lazar Miljenovic
 data-dir: ""
 extra-source-files: ChangeLog
- 
+
 source-repository head
     type: git
     location: git://github.com/haskell/fgl.git
- 
+
 library
     build-depends: base <5, transformers -any, containers -any,
                    array -any, deepseq >=1.1.0.0 && <1.5.0.0
-     
+
     if (impl(ghc >=7.2) && impl(ghc <7.6))
         build-depends: ghc-prim -any
         exposed: True
@@ -42,12 +42,13 @@ library
                      Data.Graph.Inductive.Query.MaxFlow2
                      Data.Graph.Inductive.Query.Monad Data.Graph.Inductive.Query.SP
                      Data.Graph.Inductive.Query.TransClos Data.Graph.Inductive
+                     Data.Graph.Inductive.Generic.Graph
     exposed: True
     buildable: True
     default-language: Haskell98
-    other-modules: Data.Graph.Inductive.Generic.Graph Paths_fgl
+    other-modules: Paths_fgl
     ghc-options: -Wall
- 
+
 test-suite fgl-tests
     build-depends: fgl -any, base -any, QuickCheck >=2.3 && <2.9,
                    hspec ==2.1.*, containers -any
@@ -60,4 +61,4 @@ test-suite fgl-tests
                    Data.Graph.Inductive.Proxy Data.Graph.Inductive.Properties
     ghc-prof-options: -prof -auto
     ghc-options: -Wall
- 
+
