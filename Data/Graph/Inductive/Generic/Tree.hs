@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 #if __GLASGOW_HASKELL__ >= 702
 {-# LANGUAGE DeriveGeneric #-}
@@ -117,13 +118,22 @@ instance Ord n => DynGraph (Gr n) where
   (p,v,l,s) & (Gr g) = Gr
                        . updAdj p (addSucc v)
                        . updAdj s (addPred v)
-                       $ M.alter addCntxt v g
-    where
-      addCntxt = maybe onAbsent onPresent
-      onAbsent = Just cntxt'
-      -- Perhaps instead, merge with present context?
-      onPresent = const (error ("Node Exception: Node already exists"))
-      cntxt' = (p,l,s)
+                       $ M.insert v (p,l,s) g
+--    where
+--      addCntxt = maybe onAbsent onPresent
+--      onAbsent = Just cntxt'
+--      --Originally
+--      onPresent = const (error ("Node Exception: Node already exists"))
+----      onPresent  = Just cntxt'
+--      cntxt' = (p,l,s)
+
+--instance Ord n => DynGraph (Gr n) where
+--    (p, v, l, s) & (Gr g)
+--        = let !g1 = M.insert v (fromAdj p, l, fromAdj s) g
+--              !g2 = addSucc g1 v p
+--              !g3 = addPred g2 v s
+--          in Gr g3
+
 
 instance (NFData a, NFData b, NFData n) => NFData (Gr n a b) where
   rnf (Gr g) = rnf g
@@ -131,6 +141,14 @@ instance (NFData a, NFData b, NFData n) => NFData (Gr n a b) where
 ----------------------------------------------------------------------
 -- UTILITIES
 ----------------------------------------------------------------------
+
+toAdj :: Ord n => Map n [b] -> Adj n b
+toAdj = concatMap expand . M.toList
+  where
+    expand (n,ls) = map (flip (,) n) ls
+
+fromAdj :: Ord n => Adj n b -> Map n [b]
+fromAdj = M.fromListWith addLists . map (second (:[]) . swap)
 
 addSucc :: n -> b -> Context' n a b -> Context' n a b
 addSucc v l (p,l',s) = (p,l',(l,v):s)
@@ -147,3 +165,11 @@ clearPred v _ (p,l,s) = (filter ((/=v).snd) p,l,s)
 updAdj :: Ord n => Adj n b -> (b -> Context' n a b -> Context' n a b)
        -> GraphRep n a b -> GraphRep n a b
 updAdj adj f g = foldl' (\g' (l,v) -> M.adjust (f l) v g') g adj
+
+swap :: (a, b) -> (b, a)
+swap (a, b) = (b, a)
+
+addLists :: [a] -> [a] -> [a]
+addLists [a] as  = a : as
+addLists as  [a] = a : as
+addLists xs  ys  = xs ++ ys

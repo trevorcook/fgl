@@ -12,7 +12,8 @@
 --
 -----------------------------------------------------------------------------
 -- (c) 1999 - 2002 by Martin Erwig [see file COPYRIGHT]
--- | Basic Graph Algorithms
+--  Basic Graph Algorithms
+
 module Data.Graph.Inductive.Generic.Basic
 (
     -- * Graph Operations
